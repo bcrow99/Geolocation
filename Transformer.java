@@ -34,12 +34,15 @@ public class Transformer
 	    double x_origin = (double)origin.get(1);
 	    double y_origin = (double)origin.get(0);
 	    
+	    System.out.println("The longitude of the zone origin is " + x_origin);
+	    System.out.println("The latiude of the zone of the zone origin is " + y_origin);
+	    
 	    double longitude_degree_length = getLongitudeDegreeLength(y_origin);
 	    longitude_degree_length       += getLongitudeDegreeLength(latitude);
 	    longitude_degree_length       /= 2;
 	    
 	    double latitude_degree_length = getLatitudeDegreeLength(y_origin);
-	    latitude_degree_length       += getLongitudeDegreeLength(latitude);
+	    latitude_degree_length       += getLatitudeDegreeLength(latitude);
 	    latitude_degree_length       /= 2;
 	    
 	    double longitude_delta = Math.abs(x_origin - longitude);
@@ -49,8 +52,8 @@ public class Transformer
     	if(x_origin > longitude)
     		east = -east;
     	
-    	double latitude_delta = Math.abs(y_origin - latitude);
-    	double north = latitude_delta * latitude_degree_length;
+    	
+    	double north = latitude * latitude_degree_length;
 	    
     	
 	    System.out.println("Latitude " + latitude + ", longitude " + longitude + " is in zone " + zone + " " + zone_letter);
