@@ -30,12 +30,13 @@ public class Transformer
 		int zone = getZoneNumber(longitude);
 		char zone_letter = getZoneLetter(latitude);
 	    ArrayList origin = getZoneOrigin(latitude, longitude);
+	    System.out.println("Latitude " + latitude + ", longitude " + longitude + " is in zone " + zone + " " + zone_letter);
 	    
 	    double x_origin = (double)origin.get(1);
 	    double y_origin = (double)origin.get(0);
 	    
 	    System.out.println("The longitude of the zone origin is " + x_origin);
-	    System.out.println("The latiude of the zone of the zone origin is " + y_origin);
+	    System.out.println("The latiude of the zone origin is " + y_origin);
 	    
 	    double longitude_degree_length = getLongitudeDegreeLength(y_origin);
 	    longitude_degree_length       += getLongitudeDegreeLength(latitude);
@@ -45,20 +46,18 @@ public class Transformer
 	    latitude_degree_length       += getLatitudeDegreeLength(latitude);
 	    latitude_degree_length       /= 2;
 	    
-	    double longitude_delta = Math.abs(x_origin - longitude);
+	    double longitude_delta = longitude - x_origin;
 	    
     	double east = longitude_delta * longitude_degree_length;
-    	
-    	if(x_origin > longitude)
-    		east = -east;
-    	
+    	east       += 500000;
     	
     	double north = latitude * latitude_degree_length;
+    	if(latitude < 0)
+    		north += 10000000;
 	    
-    	
 	    System.out.println("Latitude " + latitude + ", longitude " + longitude + " is in zone " + zone + " " + zone_letter);
-	    System.out.println("The location is " + String.format("%.4f", east) + " meters east of the zone origin.");
-	    System.out.println("The location is " + String.format("%.4f", north) + " meters north of the zone origin.");
+	    System.out.println("The location is " + String.format("%.4f", east) + " meters east of the false zone origin.");
+	    System.out.println("The location is " + String.format("%.4f", north) + " meters north of the false zone origin.");
 	    
 	}
 	
@@ -232,8 +231,6 @@ public class Transformer
 	    	return origin;
 	    }
 	    
-	    
-	    
 	    double getLatitudeDegreeLength(double latitude_degrees)
 	    {
 	        double latitude_radians = Math.toRadians(latitude_degrees);	
@@ -272,5 +269,32 @@ public class Transformer
 	        return 2 * length;
 	    }
 	    
+	    double getCurvature(double latitude_degrees)
+	    {
+	    	double radius           = 6378137.;
+	    	double esquare          = 0.081819191 * 0.081819191;
+	    	double latitude_radians = Math.toRadians(latitude_degrees);
+	    	double latitude_sin     = Math.sin(latitude_radians);
+	    	double lsquare          = latitude_sin * latitude_sin;
+	    	double root             = Math.sqrt(1. - esquare * lsquare);
+	    	double cubic            = root * root * root;
+	    	double curvature        = radius * ( 1. - esquare / cubic);
+	    	
+	    	return curvature;
+	    }
 	    
+	    double getScaleFactor(double easting, double latitude_degrees)
+	    {
+	    	double scale_factor     = 0.9996;
+	    	double curvature        = getCurvature(latitude_degrees);
+	    	double latitude_radians = Math.toRadians(latitude_degrees);
+	    	
+	    	
+	    	scale_factor *= easting - 500000.;
+	    	scale_factor *= Math.sin(latitude_radians);
+	    	scale_factor *= Math.tan(latitude_radians);
+	    	scale_factor /= 2 * curvature * curvature;
+	    	
+	    	return scale_factor;
+	    }
 }
